@@ -80,6 +80,8 @@ export abstract class BaseSource {
     if (siteName.includes('-')) {
       results.push(siteName.replaceAll('-', '_'));
       results.push(siteName.replaceAll('-', ''));
+    } else {
+      results.push(siteName);
     }
     return results;
   }

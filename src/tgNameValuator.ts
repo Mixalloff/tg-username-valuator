@@ -5,22 +5,16 @@ import { TrancoListSource } from './sources/TrancoListSource';
 
 export class TgNameValuator {
   private dataSource: DataSource = dataSource;
+  private isInitializedDataSource = this.initializeDataSource();
 
-  constructor() {
-    this.dataSource.initialize()
-      .then(() => {
-        console.log('Data Source has been initialized!')
-      })
-      .catch((err) => {
-        console.error('Error during Data Source initialization', err)
-      });
-  }
+  constructor() {}
 
   /**
    * Load dictionary from source and update database
    */
   public async loadDictionary(): Promise<void> {
     try {
+      await this.isInitializedDataSource;
       const source = new TrancoListSource(this.dataSource, { requestedSitesCount: 100 });
       console.log('Pulling dictionary...');
       await source.fetchAndUpdateData();
@@ -37,6 +31,7 @@ export class TgNameValuator {
    */
   public async valuate(name: string): Promise<number | null> {
     try {
+      await this.isInitializedDataSource;
       const dictionaryRepository = this.dataSource.getRepository(DictionarySiteEntity);
       const entry = await dictionaryRepository.findOne({ where: { name } });
   
@@ -61,6 +56,20 @@ export class TgNameValuator {
       case 4: return 5050;
       case 5: return 515;
       default: return 104;
+    }
+  }
+
+  /**
+   * Initialize DataSource before using 
+   */
+  private async initializeDataSource() {
+    if (!this.dataSource.isInitialized) {
+      try {
+        await this.dataSource.initialize();
+        console.log('Data Source has been initialized!');
+      } catch(err) {
+        console.error('Error during Data Source initialization', err);
+      }
     }
   }
 }
