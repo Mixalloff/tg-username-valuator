@@ -5,7 +5,7 @@ import { TgNameValuator } from './tgNameValuator';
 
   try {
     await valuator.loadDictionary();
-    const name = 'google';
+    const name = 'yandex';
 
     const price = await valuator.valuate(name);
     console.log(`The cost of the name "${name}" is ${price}`);

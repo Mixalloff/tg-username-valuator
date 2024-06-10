@@ -77,11 +77,12 @@ export abstract class BaseSource {
    */
   private extractsNamesFromSiteName(siteName: string): string[] {
     const results = [];
+    const cleanSiteName = siteName.replaceAll(/[^a-z0-9-_]/gi, '');
     if (siteName.includes('-')) {
-      results.push(siteName.replaceAll('-', '_'));
-      results.push(siteName.replaceAll('-', ''));
+      results.push(cleanSiteName.replaceAll('-', '_'));
+      results.push(cleanSiteName.replaceAll('-', ''));
     } else {
-      results.push(siteName);
+      results.push(cleanSiteName);
     }
     return results;
   }

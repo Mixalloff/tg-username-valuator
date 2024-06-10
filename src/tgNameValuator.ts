@@ -7,15 +7,13 @@ export class TgNameValuator {
   private dataSource: DataSource = dataSource;
   private isInitializedDataSource = this.initializeDataSource();
 
-  constructor() {}
-
   /**
    * Load dictionary from source and update database
    */
   public async loadDictionary(): Promise<void> {
     try {
       await this.isInitializedDataSource;
-      const source = new TrancoListSource(this.dataSource, { requestedSitesCount: 100 });
+      const source = new TrancoListSource(this.dataSource, { requestedSitesCount: 10000 });
       console.log('Pulling dictionary...');
       await source.fetchAndUpdateData();
       console.log('Data loaded into dictionary')
@@ -62,7 +60,7 @@ export class TgNameValuator {
   /**
    * Initialize DataSource before using 
    */
-  private async initializeDataSource() {
+  private async initializeDataSource(): Promise<void> {
     if (!this.dataSource.isInitialized) {
       try {
         await this.dataSource.initialize();
