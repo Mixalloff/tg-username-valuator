@@ -1,7 +1,10 @@
 import { DataSource } from 'typeorm';
 import { dbDataSource } from './DbDataSource';
-import { TrancoListSource } from './website-sources/TrancoListSource';
-import { TgApiService } from './tg/TgApiService';
+import { UsernameValuation } from './UsernameValuation';
+import { SubscriberCountStrategy } from './valuation-strategies/SubscribersCountStrategy';
+import { DomainPopularityStrategy } from './valuation-strategies/DomainPopularityStrategy';
+import { TrancoListDomainsSource } from './domain-sources/TrancoListDomainsSource';
+import { UsernameLengthStrategy } from './valuation-strategies/UsernameLengthStrategy';
 
 export class TgUsernameValuator {
   private dbDataSource: DataSource = dbDataSource;
@@ -10,10 +13,10 @@ export class TgUsernameValuator {
   /**
    * Load dictionary from source and update database
    */
-  public async loadDictionary(requestedSitesCount: number = 10000): Promise<void> {
+  public async loadDictionary(requestedDomainsCount: number = 10000): Promise<void> {
     try {
       await this.isInitializedDataSource;
-      const source = new TrancoListSource(this.dbDataSource, { requestedSitesCount });
+      const source = new TrancoListDomainsSource(this.dbDataSource, { requestedDomainsCount });
       console.log('Pulling dictionary...');
       await source.fetchAndUpdateData();
       console.log('Data loaded into dictionary')
@@ -24,45 +27,19 @@ export class TgUsernameValuator {
 
   /**
    * Valuate tg username
-   * @param name Source username for evaluating
+   * @param username Source username for evaluating
    * @returns Estimated cost of the username
    */
-  public async valuate(name: string): Promise<number | null> {
-    const tgApiService = new TgApiService();
-    const channel = await tgApiService.getChannelInfo(name);
-    if (!channel) {
-      return 0;
-    } else {
-      return channel.participantsCount || 0;
-    }
+  public async valuate(username: string): Promise<number | null> {
+    await this.initializeDataSource;
 
-    // try {
-    //   await this.isInitializedDataSource;
-    //   const dictionaryRepository = this.dbDataSource.getRepository(DictionarySiteEntity);
-    //   const entry = await dictionaryRepository.findOne({ where: { name } });
-  
-    //   if (!entry) {
-    //     return null;
-    //   }
-  
-    //   return this.valuateByLength(entry?.name);
-    // } catch(err: any) {
-    //   throw new Error(`An error occurred while validating the username: ${err?.message}`);
-    // }
-  }
+    const valuation = new UsernameValuation();
+    valuation.addStrategy(new UsernameLengthStrategy());
+    valuation.addStrategy(new SubscriberCountStrategy());
+    valuation.addStrategy(new DomainPopularityStrategy());
 
-  /**
-   * Valuate name by length
-   * @param name Source name
-   * @returns Estimated cost of the name
-   */
-  private valuateByLength(name: string): number {
-    // TODO: add more valuable logic 
-    switch (name.length) {
-      case 4: return 5050;
-      case 5: return 515;
-      default: return 104;
-    }
+    const value = await valuation.evaluate(username);
+    return value;
   }
 
   /**

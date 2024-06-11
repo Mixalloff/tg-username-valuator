@@ -3,8 +3,6 @@
 import { Command } from 'commander';
 import { TelegramClient } from 'telegram';
 import { StoreSession } from 'telegram/sessions';
-import * as fs from 'fs';
-import * as path from 'path';
 import readlineModule from 'readline';
 import { TgUsernameValuator } from '../TgUsernameValuator';
 import { TgConfigService } from '../tg/TgConfigService';
@@ -63,18 +61,18 @@ async function valuate(username: string) {
 
   const valuator = new TgUsernameValuator();
   const value = await valuator.valuate(username);
-  console.log(`The estimated value of @${username} is ${value}`);
+  console.log(`The estimated value of @${username} is ${value} TON`);
   process.exit();
 }
 
-async function loadWebsites(count = 10000) {
+async function loadDomains(count = 10000) {
   const valuator = new TgUsernameValuator();
   try {
-    console.log('Started load websites list');
+    console.log('Started load domains list');
     await valuator.loadDictionary(count);
-    console.log('Websites dictionary successfully loaded');
+    console.log('Domains dictionary successfully loaded');
   } catch (err) {
-    console.log('Error while loading websites: ', err);
+    console.log('Error while loading domains: ', err);
   }
   process.exit();
 }
@@ -90,8 +88,8 @@ program
   .action(valuate);
 
 program
-  .command('load-websites <count>')
-  .description('Load websites dictionary')
-  .action(loadWebsites);
+  .command('load-domains <count>')
+  .description('Load domains dictionary')
+  .action(loadDomains);
 
 program.parse(process.argv);

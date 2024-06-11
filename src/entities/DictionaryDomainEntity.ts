@@ -1,10 +1,13 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
-export class DictionarySiteEntity {
+export class DictionaryDomainEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
   @Column()
   name!: string;
+
+  @Column()
+  popularity!: number;
 }
