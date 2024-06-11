@@ -7,21 +7,21 @@ import * as fs from 'fs';
 import * as path from 'path';
 import readlineModule from 'readline';
 import { TgUsernameValuator } from '../TgUsernameValuator';
-import { TgConfigService } from '../tg/tg-config-service';
+import { TgConfigService } from '../tg/TgConfigService';
 
 const program = new Command();
-const configFilePath = path.resolve(__dirname, '..', '..', 'tg-app.config.json');
+// const configFilePath = path.resolve(__dirname, '..', '..', 'tg-app.config.json');
 const session = new StoreSession('tg_session');
 const readline = readlineModule.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
+const configService = new TgConfigService();
 
 async function login() {
-  const configService = new TgConfigService();
   let config: { apiId: number, apiHash: string } | null;
 
-  if (configService.configExists()) {
+  if (configService.configExists) {
     config = configService.getConfig();
   } else {
     config = {
@@ -32,14 +32,7 @@ async function login() {
         resolve => readline.question('Please enter your api_hash: ', resolve)
       ),
     };
-    // config.apiId = await new Promise(
-    //   resolve => readline.question('Please enter your api_id: ', apiId => resolve(+apiId))
-    // ),
-    // config.apiHash = await new Promise(
-    //   resolve => readline.question('Please enter your api_hash: ', resolve)
-    // ),
     configService.saveConfig(config);
-    // fs.writeFileSync(configFilePath, JSON.stringify(config, null, 2));
   }
 
   const client = new TelegramClient(session, config.apiId, config.apiHash, { connectionRetries: 5 });
@@ -63,7 +56,7 @@ async function login() {
 }
 
 async function valuate(username: string) {
-  if (!fs.existsSync(configFilePath)) {
+  if (!configService.configExists) {
     console.log('Please login first using: tg-username-valuator login');
     process.exit();
   }

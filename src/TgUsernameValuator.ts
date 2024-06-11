@@ -1,10 +1,10 @@
 import { DataSource } from 'typeorm';
-import { dataSource } from './data-source';
+import { dbDataSource } from './DbDataSource';
 import { TrancoListSource } from './website-sources/TrancoListSource';
-import { TgApiService } from './tg/tg-api-service';
+import { TgApiService } from './tg/TgApiService';
 
 export class TgUsernameValuator {
-  private dataSource: DataSource = dataSource;
+  private dbDataSource: DataSource = dbDataSource;
   private isInitializedDataSource = this.initializeDataSource();
 
   /**
@@ -13,7 +13,7 @@ export class TgUsernameValuator {
   public async loadDictionary(requestedSitesCount: number = 10000): Promise<void> {
     try {
       await this.isInitializedDataSource;
-      const source = new TrancoListSource(this.dataSource, { requestedSitesCount });
+      const source = new TrancoListSource(this.dbDataSource, { requestedSitesCount });
       console.log('Pulling dictionary...');
       await source.fetchAndUpdateData();
       console.log('Data loaded into dictionary')
@@ -38,7 +38,7 @@ export class TgUsernameValuator {
 
     // try {
     //   await this.isInitializedDataSource;
-    //   const dictionaryRepository = this.dataSource.getRepository(DictionarySiteEntity);
+    //   const dictionaryRepository = this.dbDataSource.getRepository(DictionarySiteEntity);
     //   const entry = await dictionaryRepository.findOne({ where: { name } });
   
     //   if (!entry) {
@@ -69,9 +69,9 @@ export class TgUsernameValuator {
    * Initialize DataSource before using 
    */
   private async initializeDataSource(): Promise<void> {
-    if (!this.dataSource.isInitialized) {
+    if (!this.dbDataSource.isInitialized) {
       try {
-        await this.dataSource.initialize();
+        await this.dbDataSource.initialize();
         console.log('Data Source has been initialized!');
       } catch(err) {
         console.error('Error during Data Source initialization', err);

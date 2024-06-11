@@ -1,5 +1,5 @@
 import { TgUsernameValuator } from './TgUsernameValuator';
-import { TgApiService } from './tg/tg-api-service';
+import { TgApiService } from './tg/TgApiService';
 
 (async () => {
   const valuator = new TgUsernameValuator();

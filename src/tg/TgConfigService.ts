@@ -37,7 +37,7 @@ export class TgConfigService {
     this.config = config;
   }
 
-  public configExists(): boolean {
+  public get configExists(): boolean {
     return fs.existsSync(configFilePath);
   }
 }

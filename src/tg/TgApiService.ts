@@ -1,7 +1,7 @@
 import { Api, TelegramClient } from "telegram";
 import { StoreSession } from "telegram/sessions";
 import readlineModule from 'readline';
-import { ITgInitConfig, TgConfigService } from "./tg-config-service";
+import { ITgInitConfig, TgConfigService } from "./TgConfigService";
 
 export interface ITgApiServiceConfig {
   apiId: number,

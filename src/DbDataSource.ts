@@ -1,6 +1,6 @@
 import { DataSource } from "typeorm";
 
-export const dataSource = new DataSource({
+export const dbDataSource = new DataSource({
   type: 'sqlite',
   database: 'db.sqlite',
   entities: [
