@@ -27,3 +27,16 @@ tg-username-valuator login
 ```
 
 After the dialog is completed, you can start using the library
+
+## Available commands from cmd
+
+```bash
+// Login into Telegram client
+tg-username-valuator login
+
+// Valuate given username
+tg-username-valuator valuate <username>
+
+// Load a specified count of top domains
+tg-username-valuator load-domains <count>
+```
