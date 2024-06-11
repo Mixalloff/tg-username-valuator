@@ -2,10 +2,15 @@ import { DataSource } from 'typeorm';
 import { dataSource } from './data-source';
 import { DictionarySiteEntity } from './entities/DictionarySiteEntity';
 import { TrancoListSource } from './sources/TrancoListSource';
+import { ITgApiServiceConfig } from './tg/tg-api-service';
 
 export class TgNameValuator {
   private dataSource: DataSource = dataSource;
   private isInitializedDataSource = this.initializeDataSource();
+
+  constructor(
+    private tgConfig: ITgApiServiceConfig,
+  ) {}
 
   /**
    * Load dictionary from source and update database

@@ -20,6 +20,7 @@
     "csv-parser": "^3.0.0",
     "reflect-metadata": "^0.2.2",
     "sqlite3": "^5.1.7",
+    "telegram": "^2.22.2",
     "typeorm": "^0.3.20"
   }
 }
