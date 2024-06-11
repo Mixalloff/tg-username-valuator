@@ -1,24 +1,19 @@
 import { DataSource } from 'typeorm';
 import { dataSource } from './data-source';
-import { DictionarySiteEntity } from './entities/DictionarySiteEntity';
-import { TrancoListSource } from './sources/TrancoListSource';
-import { ITgApiServiceConfig } from './tg/tg-api-service';
+import { TrancoListSource } from './website-sources/TrancoListSource';
+import { TgApiService } from './tg/tg-api-service';
 
-export class TgNameValuator {
+export class TgUsernameValuator {
   private dataSource: DataSource = dataSource;
   private isInitializedDataSource = this.initializeDataSource();
-
-  constructor(
-    private tgConfig: ITgApiServiceConfig,
-  ) {}
 
   /**
    * Load dictionary from source and update database
    */
-  public async loadDictionary(): Promise<void> {
+  public async loadDictionary(requestedSitesCount: number = 10000): Promise<void> {
     try {
       await this.isInitializedDataSource;
-      const source = new TrancoListSource(this.dataSource, { requestedSitesCount: 10000 });
+      const source = new TrancoListSource(this.dataSource, { requestedSitesCount });
       console.log('Pulling dictionary...');
       await source.fetchAndUpdateData();
       console.log('Data loaded into dictionary')
@@ -33,19 +28,27 @@ export class TgNameValuator {
    * @returns Estimated cost of the username
    */
   public async valuate(name: string): Promise<number | null> {
-    try {
-      await this.isInitializedDataSource;
-      const dictionaryRepository = this.dataSource.getRepository(DictionarySiteEntity);
-      const entry = await dictionaryRepository.findOne({ where: { name } });
-  
-      if (!entry) {
-        return null;
-      }
-  
-      return this.valuateByLength(entry?.name);
-    } catch(err: any) {
-      throw new Error(`An error occurred while validating the username: ${err?.message}`);
+    const tgApiService = new TgApiService();
+    const channel = await tgApiService.getChannelInfo(name);
+    if (!channel) {
+      return 0;
+    } else {
+      return channel.participantsCount || 0;
     }
+
+    // try {
+    //   await this.isInitializedDataSource;
+    //   const dictionaryRepository = this.dataSource.getRepository(DictionarySiteEntity);
+    //   const entry = await dictionaryRepository.findOne({ where: { name } });
+  
+    //   if (!entry) {
+    //     return null;
+    //   }
+  
+    //   return this.valuateByLength(entry?.name);
+    // } catch(err: any) {
+    //   throw new Error(`An error occurred while validating the username: ${err?.message}`);
+    // }
   }
 
   /**

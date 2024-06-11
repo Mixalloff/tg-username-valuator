@@ -1,6 +1,7 @@
 import { Api, TelegramClient } from "telegram";
 import { StoreSession } from "telegram/sessions";
 import readlineModule from 'readline';
+import { ITgInitConfig, TgConfigService } from "./tg-config-service";
 
 export interface ITgApiServiceConfig {
   apiId: number,
@@ -15,18 +16,19 @@ export class TgApiService {
     input: process.stdin,
     output: process.stdout,
   });
+  private tgAppConfig!: ITgInitConfig;
+  private tgConfigService = new TgConfigService();
 
-  constructor(
-    private config: ITgApiServiceConfig,
-  ) {
+  constructor() {
     this.initClient();
   }
 
   public initClient() {
+    this.tgAppConfig = this.tgConfigService.getConfig();
     this.client = new TelegramClient(
       this.storeSession,
-      this.config.apiId,
-      this.config.apiHash,
+      this.tgAppConfig.apiId,
+      this.tgAppConfig.apiHash,
       { connectionRetries: 5 }
     );
   }
@@ -76,9 +78,5 @@ export class TgApiService {
       console.error(`Error fetching channel info: ${error.message}`);
       return null;
     }
-  }
-
-  public async destroy() {
-    await this.client.destroy();
   }
 }

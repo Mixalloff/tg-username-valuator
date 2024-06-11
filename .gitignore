@@ -4,5 +4,9 @@
 # database
 *.sqlite
 
-# Telegram session
+# Telegram session files
+tg-app.config.json
 tg_session
+
+# build
+/build

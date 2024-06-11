@@ -1,12 +1,8 @@
+import { TgUsernameValuator } from './TgUsernameValuator';
 import { TgApiService } from './tg/tg-api-service';
-import { TgNameValuator } from './tgNameValuator';
 
 (async () => {
-  // TODO: Change it
-  const apiId = 12345;
-  const apiHash = 'asdfhj';
-
-  const valuator = new TgNameValuator({apiId, apiHash});
+  const valuator = new TgUsernameValuator();
 
   try {
     // await valuator.loadDictionary();
@@ -16,7 +12,7 @@ import { TgNameValuator } from './tgNameValuator';
     // console.log(`The cost of the name "${name}" is ${price}`);
 
 
-    const tgApiService = new TgApiService({ apiId, apiHash });
+    const tgApiService = new TgApiService();
     const username = 'hamster_kombat';
     const channelData = await tgApiService.getChannelInfo(username);
     
@@ -26,8 +22,7 @@ import { TgNameValuator } from './tgNameValuator';
     } else {
       console.log('Channel not found!');
     }
-    await tgApiService.destroy();
-
+    process.exit();
   } catch (error: any) {
     console.error(error?.message);
   }
