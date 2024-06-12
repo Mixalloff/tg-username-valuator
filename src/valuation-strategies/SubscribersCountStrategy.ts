@@ -17,7 +17,9 @@ export class SubscriberCountStrategy implements IValuationStrategy {
 
   public async evaluate(username: string, currentValuation: number): Promise<number> {
     const tgApiService = new TgApiService();
+    await tgApiService.connectClient();
     const channel = await tgApiService.getChannelInfo(username);
+    await tgApiService.disconnectClient();
     if (!channel?.participantsCount) {
       console.log(`[SubscriberCountStrategy] No channel found or participants count is unavailable. Valuation is ${currentValuation} TON`);
       // Return the same valuation if the channel not found or has no public participants count

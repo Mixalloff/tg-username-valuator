@@ -10,4 +10,7 @@ export class DictionaryDomainEntity {
 
   @Column()
   popularity!: number;
+
+  @Column({ nullable: true })
+  subscribers!: number;
 }

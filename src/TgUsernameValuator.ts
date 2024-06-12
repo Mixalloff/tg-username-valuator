@@ -5,6 +5,8 @@ import { SubscriberCountStrategy } from './valuation-strategies/SubscribersCount
 import { DomainPopularityStrategy } from './valuation-strategies/DomainPopularityStrategy';
 import { TrancoListDomainsSource } from './domain-sources/TrancoListDomainsSource';
 import { UsernameLengthStrategy } from './valuation-strategies/UsernameLengthStrategy';
+import { TgApiService } from './tg/TgApiService';
+import { DictionaryDomainEntity } from './entities/DictionaryDomainEntity';
 
 export class TgUsernameValuator {
   private dbDataSource: DataSource = dbDataSource;
@@ -22,6 +24,36 @@ export class TgUsernameValuator {
       console.log('Data loaded into dictionary')
     } catch (err) {
       console.error('Error during loading data', err)
+    }
+  }
+
+  /**
+   * Check domains for channels and number of subscribers
+   */
+  public async checkDomainsForChannels() {
+    // TODO: here is a problem with limitations of Telegram API. Need to try Bot API 
+    try {
+      await this.isInitializedDataSource;
+      
+      const dictionaryRepository = this.dbDataSource.getRepository(DictionaryDomainEntity);
+      const domainEntitiesList = await dictionaryRepository.find();
+
+      const tgApiService = new TgApiService();
+      await tgApiService.connectClient();
+      for (let domainEntity of domainEntitiesList) {
+        const channel = await tgApiService.getChannelInfo(domainEntity.name);
+
+        console.log(domainEntity.popularity, domainEntity.name, channel?.participantsCount);
+        if (channel) {
+          const subscribers = channel?.participantsCount;
+          dictionaryRepository.save({ ...domainEntity, subscribers });
+        }
+        // Delay between requests
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+      await tgApiService.disconnectClient();
+    } catch (err) {
+      console.error('Error during check domains', err)
     }
   }
 

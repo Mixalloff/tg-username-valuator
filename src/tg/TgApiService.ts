@@ -33,7 +33,7 @@ export class TgApiService {
     );
   }
 
-  public async connectClientToTg() {
+  public async connectClient() {
     await this.client.connect();
     if (await this.client.checkAuthorization()) {
       console.log('Client successfully connected and authorized');
@@ -41,6 +41,10 @@ export class TgApiService {
       console.log('Login is required');
       await this.login();
     }
+  }
+
+  public async disconnectClient() {
+    this.client.disconnect();
   }
 
   public async login() {
@@ -64,14 +68,22 @@ export class TgApiService {
 
   public async getChannelInfo(channelUsername: string): Promise<Api.ChannelFull | null> {
     try {
-      await this.connectClientToTg();
+      // const result = await this.client.invoke(
+      //   new Api.channels.GetParticipants({
+      //     channel: channelUsername,
+      //     filter: new Api.ChannelParticipantsRecent(),
+      //     offset: 0,
+      //     limit: 1,
+      //     // hash: 0,
+      //   })
+      // );
+      // return result.count;
+
       const channel = await this.client.getEntity(channelUsername);
       const fullChannel: Api.messages.ChatFull = await this.client.invoke(
         new Api.channels.GetFullChannel({ channel })
       );
       const channelDataWithParticipants = fullChannel.fullChat as Api.ChannelFull;
-
-      await this.client.disconnect();
 
       return channelDataWithParticipants;
     } catch (error: any) {
