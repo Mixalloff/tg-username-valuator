@@ -48,7 +48,10 @@ export abstract class BaseDomainsSource {
           if (this.validateDomainNameForDictionary(domainName)) {
             const namesArray = this.extractsNamesFromDomainName(domainName);
             for (const domainName of namesArray) {
-              results.push({ domainName, popularity });
+              const domainNameExists = results.find(({domainName: name}) => name === domainName);
+              if (!domainNameExists) {
+                results.push({ domainName, popularity });
+              }
             }
           }
         })

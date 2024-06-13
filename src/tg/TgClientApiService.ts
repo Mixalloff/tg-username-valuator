@@ -1,14 +1,10 @@
 import { Api, TelegramClient } from "telegram";
 import { StoreSession } from "telegram/sessions";
 import readlineModule from 'readline';
-import { ITgInitConfig, TgConfigService } from "./TgConfigService";
+import { ITgClientInitConfig, TgClientConfigService } from "./config-service/TgClientConfigService";
+import logger from "../logger";
 
-export interface ITgApiServiceConfig {
-  apiId: number,
-  apiHash: string,
-}
-
-export class TgApiService {
+export class TgClientApiService {
   private TG_SESSION_STORAGE_KEY = 'tg_session';
   private client!: TelegramClient;
   private storeSession = new StoreSession(this.TG_SESSION_STORAGE_KEY);
@@ -16,8 +12,8 @@ export class TgApiService {
     input: process.stdin,
     output: process.stdout,
   });
-  private tgAppConfig!: ITgInitConfig;
-  private tgConfigService = new TgConfigService();
+  private tgAppConfig!: ITgClientInitConfig;
+  private tgConfigService = new TgClientConfigService();
 
   constructor() {
     this.initClient();
@@ -36,9 +32,9 @@ export class TgApiService {
   public async connectClient() {
     await this.client.connect();
     if (await this.client.checkAuthorization()) {
-      console.log('Client successfully connected and authorized');
+      logger.info('Client successfully connected and authorized');
     } else {
-      console.log('Login is required');
+      logger.info('Login is required');
       await this.login();
     }
   }
@@ -48,7 +44,7 @@ export class TgApiService {
   }
 
   public async login() {
-    console.log('Enter your credentials below');
+    logger.info('Enter your credentials below');
     await this.client.start({
       phoneNumber: async () => await new Promise(
         resolve => this.readline.question('Please enter your number: ', resolve)
@@ -59,11 +55,13 @@ export class TgApiService {
       phoneCode: async () => await new Promise(
         resolve => this.readline.question('Please enter the code you received: ', resolve)
       ),
-      onError: console.error,
+      onError: err => {
+        logger.error(JSON.stringify(err));
+      },
     });
-    console.log('You should now be connected.');
+    logger.info('You should now be connected.');
     this.storeSession.save();
-    console.log(`Session saved to ${this.TG_SESSION_STORAGE_KEY}`);
+    logger.info(`Session saved to ${this.TG_SESSION_STORAGE_KEY}`);
   }
 
   public async getChannelInfo(channelUsername: string): Promise<Api.ChannelFull | null> {
@@ -87,7 +85,7 @@ export class TgApiService {
 
       return channelDataWithParticipants;
     } catch (error: any) {
-      console.error(`Error fetching channel info: ${error.message}`);
+      logger.error(`Error fetching channel info: ${error.message}`);
       return null;
     }
   }

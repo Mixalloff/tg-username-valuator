@@ -2,6 +2,7 @@ import { DataSource } from "typeorm";
 import { IValuationStrategy } from "../UsernameValuation";
 import { dbDataSource } from "../DbDataSource";
 import { DictionaryDomainEntity } from "../entities/DictionaryDomainEntity";
+import logger from "../logger";
 
 export class DomainPopularityStrategy implements IValuationStrategy {
   private dbDataSource: DataSource = dbDataSource;
@@ -12,9 +13,9 @@ export class DomainPopularityStrategy implements IValuationStrategy {
 
     const domainPopularityKoef = await this.getDomainPopularityKoef(entry);
     if (entry) {
-      console.log(`[DomainPopularityStrategy] Domain ${entry?.name} with popularity ${entry?.popularity} has koefficient ${domainPopularityKoef}`);
+      logger.info(`[DomainPopularityStrategy] Domain ${entry?.name} with popularity ${entry?.popularity} has koefficient ${domainPopularityKoef}`);
     } else {
-      console.log(`[DomainPopularityStrategy] Domain ${username} not found in dictionary`);
+      logger.info(`[DomainPopularityStrategy] Domain ${username} not found in dictionary`);
     }
     return currentValuation * domainPopularityKoef;
   }

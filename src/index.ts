@@ -1,33 +1,34 @@
 import { TgUsernameValuator } from './TgUsernameValuator';
-import { TgApiService } from './tg/TgApiService';
+import logger from './logger';
+import { TgClientApiService } from './tg/TgClientApiService';
 
 (async () => {
   const valuator = new TgUsernameValuator();
 
   try {
-    await valuator.loadDictionary(1000);
+    // await valuator.loadDictionary(10_000);
     await valuator.checkDomainsForChannels();
     // const name = 'yandex';
 
     // const price = await valuator.valuate(name);
-    // console.log(`The cost of the name "${name}" is ${price}`);
+    // logger.info(`The cost of the name "${name}" is ${price}`);
 
 
-    // const tgApiService = new TgApiService();
+    // const tgApiService = new TgClientApiService();
     // const username = 'hamster_kombat';
     // await tgApiService.connectClient();
     // const channelData = await tgApiService.getChannelInfo(username);
     // await tgApiService.disconnectClient(); 
     
     // if (channelData) {
-    //   console.log(`Channel: ${username}`);
-    //   console.log(`Subscribers: ${channelData?.participantsCount}`);
+    //   logger.info(`Channel: ${username}`);
+    //   logger.info(`Subscribers: ${channelData?.participantsCount}`);
     // } else {
-    //   console.log('Channel not found!');
+    //   logger.info('Channel not found!');
     // }
 
     process.exit();
   } catch (error: any) {
-    console.error(error?.message);
+    logger.error(error?.message);
   }
 })();

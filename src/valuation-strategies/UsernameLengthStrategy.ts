@@ -1,4 +1,5 @@
 import { IValuationStrategy } from "../UsernameValuation";
+import logger from "../logger";
 
 export class UsernameLengthStrategy implements IValuationStrategy {
 
@@ -11,7 +12,7 @@ export class UsernameLengthStrategy implements IValuationStrategy {
       }
     };
     const result = Math.max(currentValuation, lengthValuation());
-    console.log(`[UsernameLengthStrategy] Valuation of ${username} by length is ${result} TON`);
+    logger.info(`[UsernameLengthStrategy] Valuation of ${username} by length is ${result} TON`);
     return result;
   }
 }

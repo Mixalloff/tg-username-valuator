@@ -1,12 +1,13 @@
-import { DataSource } from 'typeorm';
+import { DataSource, IsNull } from 'typeorm';
 import { dbDataSource } from './DbDataSource';
 import { UsernameValuation } from './UsernameValuation';
-import { SubscriberCountStrategy } from './valuation-strategies/SubscribersCountStrategy';
 import { DomainPopularityStrategy } from './valuation-strategies/DomainPopularityStrategy';
 import { TrancoListDomainsSource } from './domain-sources/TrancoListDomainsSource';
 import { UsernameLengthStrategy } from './valuation-strategies/UsernameLengthStrategy';
-import { TgApiService } from './tg/TgApiService';
 import { DictionaryDomainEntity } from './entities/DictionaryDomainEntity';
+import { TgBotApiServiceManager } from './tg/TgBotApiServiceManager';
+import logger from './logger';
+import { TgBotConfigService } from './tg/config-service/TgBotConfigService';
 
 export class TgUsernameValuator {
   private dbDataSource: DataSource = dbDataSource;
@@ -19,11 +20,11 @@ export class TgUsernameValuator {
     try {
       await this.isInitializedDataSource;
       const source = new TrancoListDomainsSource(this.dbDataSource, { requestedDomainsCount });
-      console.log('Pulling dictionary...');
+      logger.info('Pulling dictionary...');
       await source.fetchAndUpdateData();
-      console.log('Data loaded into dictionary')
-    } catch (err) {
-      console.error('Error during loading data', err)
+      logger.info('Data loaded into dictionary')
+    } catch (err: any) {
+      logger.error(`Error during loading data ${JSON.stringify(err)}`)
     }
   }
 
@@ -31,29 +32,44 @@ export class TgUsernameValuator {
    * Check domains for channels and number of subscribers
    */
   public async checkDomainsForChannels() {
-    // TODO: here is a problem with limitations of Telegram API. Need to try Bot API 
     try {
       await this.isInitializedDataSource;
       
       const dictionaryRepository = this.dbDataSource.getRepository(DictionaryDomainEntity);
-      const domainEntitiesList = await dictionaryRepository.find();
+      const domainEntitiesList = await dictionaryRepository.find({
+        where: [
+          { updatedAt: IsNull() }, // update only rows which was not updated before
+        ],
+      });
+      logger.info(`[checkDomainsForChannels] Will be updated ${domainEntitiesList.length} rows.`);
+      logger.info(`[checkDomainsForChannels] Started from ${JSON.stringify(domainEntitiesList[0])}`);
 
-      const tgApiService = new TgApiService();
-      await tgApiService.connectClient();
+      const config = new TgBotConfigService();
+      const botAuthTokens = config.getConfig();
+      const tgApiServiceManager = new TgBotApiServiceManager(botAuthTokens);
       for (let domainEntity of domainEntitiesList) {
-        const channel = await tgApiService.getChannelInfo(domainEntity.name);
+        const subscribers = await tgApiServiceManager.getChannelParticipantsCount(domainEntity.name);
+        const updatedAt = new Date().toISOString(); 
 
-        console.log(domainEntity.popularity, domainEntity.name, channel?.participantsCount);
-        if (channel) {
-          const subscribers = channel?.participantsCount;
-          dictionaryRepository.save({ ...domainEntity, subscribers });
+        logger.info(`popularity: ${domainEntity.popularity}, name: ${domainEntity.name}, subscribers: ${subscribers}`);
+        if (subscribers) {
+          dictionaryRepository.save({ 
+            ...domainEntity, 
+            subscribers,
+            updatedAt,
+          });
+        } else {
+          dictionaryRepository.save({ 
+            ...domainEntity,
+            updatedAt,
+          });
         }
-        // Delay between requests
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Delay between requests in ms
+        const DELAY_MS = 2000;
+        await new Promise((resolve) => setTimeout(resolve, DELAY_MS));
       }
-      await tgApiService.disconnectClient();
     } catch (err) {
-      console.error('Error during check domains', err)
+      logger.error(`[checkDomainsForChannels] Error during check domains: ${JSON.stringify(err)}`);
     }
   }
 
@@ -67,7 +83,7 @@ export class TgUsernameValuator {
 
     const valuation = new UsernameValuation();
     valuation.addStrategy(new UsernameLengthStrategy());
-    valuation.addStrategy(new SubscriberCountStrategy());
+    // valuation.addStrategy(new SubscriberCountStrategy());
     valuation.addStrategy(new DomainPopularityStrategy());
 
     const value = await valuation.evaluate(username);
@@ -81,9 +97,9 @@ export class TgUsernameValuator {
     if (!this.dbDataSource.isInitialized) {
       try {
         await this.dbDataSource.initialize();
-        console.log('Data Source has been initialized!');
+        logger.info('Data Source has been initialized!');
       } catch(err) {
-        console.error('Error during Data Source initialization', err);
+        logger.error(`Error during Data Source initialization: ${JSON.stringify(err)}`);
       }
     }
   }

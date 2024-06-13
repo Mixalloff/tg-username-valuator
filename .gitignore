@@ -5,8 +5,12 @@
 *.sqlite
 
 # Telegram session files
-tg-app.config.json
+tg-client.config.json
+tg-bot.config.json
 tg_session
 
 # build
 /build
+
+# logs
+/logs

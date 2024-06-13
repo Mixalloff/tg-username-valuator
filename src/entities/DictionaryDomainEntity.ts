@@ -5,7 +5,7 @@ export class DictionaryDomainEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column()
+  @Column({ unique: true })
   name!: string;
 
   @Column()
@@ -13,4 +13,7 @@ export class DictionaryDomainEntity {
 
   @Column({ nullable: true })
   subscribers!: number;
+
+  @Column({ name: 'updated_at', type: 'text', nullable: true })
+  updatedAt!: string; // ISO string
 }
