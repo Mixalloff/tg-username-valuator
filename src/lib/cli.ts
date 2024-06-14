@@ -97,7 +97,7 @@ async function loadDomains(count = 10000) {
   const valuator = new TgUsernameValuator();
   try {
     logger.info('Started load domains list');
-    await valuator.loadDictionary(count);
+    await valuator.loadDomainsDictionaryForce(count);
     logger.info('Domains dictionary successfully loaded');
   } catch (err) {
     logger.info(`Error while loading domains: ${err}`);

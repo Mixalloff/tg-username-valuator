@@ -6,6 +6,7 @@ import logger from "../logger";
 
 export class DomainPopularityStrategy implements IValuationStrategy {
   private dbDataSource: DataSource = dbDataSource;
+  private valuePerSubscriberTON: number = 0.01;
 
   public async evaluate(username: string, currentValuation: number): Promise<number> {
     const dictionaryRepository = this.dbDataSource.getRepository(DictionaryDomainEntity);
@@ -17,7 +18,21 @@ export class DomainPopularityStrategy implements IValuationStrategy {
     } else {
       logger.info(`[DomainPopularityStrategy] Domain ${username} not found in dictionary`);
     }
-    return currentValuation * domainPopularityKoef;
+    const domainPopularityValuation = currentValuation * domainPopularityKoef;
+    const valuationBySubscriptions = this.valuateBySubscriptions(entry, domainPopularityValuation);
+    return valuationBySubscriptions;
+  }
+
+  private valuateBySubscriptions(entry: DictionaryDomainEntity | null, baseValue: number): number {
+    if (!entry) {
+      return baseValue;
+    }
+    let tempResult = baseValue;
+    if (entry.subscribers) {
+      tempResult = Math.floor(this.valuePerSubscriberTON * entry.subscribers);
+      logger.info(`[DomainPopularityStrategy] ${entry?.subscribers} subscriber found for ${entry.name}. Valuation is ${tempResult} TON`);
+    }
+    return Math.max(tempResult, baseValue);
   }
 
   private async getDomainPopularityKoef(entry: DictionaryDomainEntity | null): Promise<number> {

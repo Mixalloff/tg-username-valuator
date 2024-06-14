@@ -6,17 +6,35 @@ import { TrancoListDomainsSource } from './domain-sources/TrancoListDomainsSourc
 import { UsernameLengthStrategy } from './valuation-strategies/UsernameLengthStrategy';
 import { DictionaryDomainEntity } from './entities/DictionaryDomainEntity';
 import { TgBotApiServiceManager } from './tg/TgBotApiServiceManager';
-import logger from './logger';
 import { TgBotConfigService } from './tg/config-service/TgBotConfigService';
+import logger from './logger';
 
 export class TgUsernameValuator {
   private dbDataSource: DataSource = dbDataSource;
   private isInitializedDataSource = this.initializeDataSource();
 
   /**
-   * Load dictionary from source and update database
+   * Valuate tg username
+   * @param username Source username for evaluating
+   * @returns Estimated cost of the username
    */
-  public async loadDictionary(requestedDomainsCount: number = 10000): Promise<void> {
+  public async valuate(username: string): Promise<number | null> {
+    await this.isInitializedDataSource;
+
+    const valuation = new UsernameValuation();
+    valuation.addStrategy(new UsernameLengthStrategy());
+    // valuation.addStrategy(new SubscriberCountStrategy()); // currently update on the fly is unavailable 
+    valuation.addStrategy(new DomainPopularityStrategy());
+
+    const value = await valuation.evaluate(username);
+    return value;
+  }
+
+  /**
+   * Load dictionary from source and update database
+   * !IMPORTANT! This method will remove previous disctionary. Be carefull 
+   */
+  public async loadDomainsDictionaryForce(requestedDomainsCount: number = 10000): Promise<void> {
     try {
       await this.isInitializedDataSource;
       const source = new TrancoListDomainsSource(this.dbDataSource, { requestedDomainsCount });
@@ -71,23 +89,6 @@ export class TgUsernameValuator {
     } catch (err) {
       logger.error(`[checkDomainsForChannels] Error during check domains: ${JSON.stringify(err)}`);
     }
-  }
-
-  /**
-   * Valuate tg username
-   * @param username Source username for evaluating
-   * @returns Estimated cost of the username
-   */
-  public async valuate(username: string): Promise<number | null> {
-    await this.initializeDataSource;
-
-    const valuation = new UsernameValuation();
-    valuation.addStrategy(new UsernameLengthStrategy());
-    // valuation.addStrategy(new SubscriberCountStrategy());
-    valuation.addStrategy(new DomainPopularityStrategy());
-
-    const value = await valuation.evaluate(username);
-    return value;
   }
 
   /**
