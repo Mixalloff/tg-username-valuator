@@ -5,7 +5,7 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "bin": {
-    "tg-username-valuator": "src/lib/cli.js"
+    "tg-username-valuator": "build/src/lib/cli.js"
   },
   "scripts": {
     "build": "tsc",
