@@ -2,16 +2,19 @@
   "name": "tg-username-valuator",
   "version": "1.0.1",
   "description": "Library for approximate cost estimation of Telegram usernames",
-  "main": "index.ts",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "bin": {
-    "tg-username-valuator": "lib/cli.js"
+    "tg-username-valuator": "src/lib/cli.js"
   },
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
-    "start": "ts-node src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "files": [
+    "build/**/*"
+  ],
   "author": "Mixalloff",
   "license": "MIT",
   "devDependencies": {
