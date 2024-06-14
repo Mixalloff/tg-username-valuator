@@ -105,6 +105,12 @@ async function loadDomains(count = 10000) {
   process.exit();
 }
 
+async function updateNewDomainSubscribers() {
+  const valuator = new TgUsernameValuator();
+  await valuator.checkDomainsForChannels();
+  process.exit();
+}
+
 program
   .command('login-client')
   .description('Login as client to Telegram')
@@ -124,5 +130,10 @@ program
   .command('load-domains <count>')
   .description('Load domains dictionary')
   .action(loadDomains);
+
+program
+  .command('update-subscribers')
+  .description('Update domains subscribers count')
+  .action(updateNewDomainSubscribers);
 
 program.parse(process.argv);
