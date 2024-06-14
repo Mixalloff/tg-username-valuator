@@ -1,6 +1,6 @@
 {
   "name": "tg-username-valuator",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Library for approximate cost estimation of Telegram usernames",
   "main": "build/index.js",
   "types": "build/index.d.ts",
